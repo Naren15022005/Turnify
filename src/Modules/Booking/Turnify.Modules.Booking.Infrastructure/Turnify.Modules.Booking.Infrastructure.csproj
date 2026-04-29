@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Turnify.Modules.Booking.Application\Turnify.Modules.Booking.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Infrastructure\Turnify.Shared.Infrastructure\Turnify.Shared.Infrastructure.csproj" />
+    <!-- Read-only adapters: access sibling modules' DbContexts at infrastructure level only -->
+    <ProjectReference Include="..\..\..\Modules\Scheduling\Turnify.Modules.Scheduling.Infrastructure\Turnify.Modules.Scheduling.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Catalog\Turnify.Modules.Catalog.Infrastructure\Turnify.Modules.Catalog.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_test_pass
+          MYSQL_DATABASE: turnify_test
+          MYSQL_USER: turnify
+          MYSQL_PASSWORD: turnify_test_pass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -u turnify -pturnify_test_pass"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Unit Tests
+        run: dotnet test tests/Unit --no-build -c Release --logger "trx;LogFileName=unit-tests.trx"
+
+      - name: Architecture Tests
+        run: dotnet test tests/Architecture --no-build -c Release --logger "trx;LogFileName=arch-tests.trx"
+
+      - name: Integration Tests
+        run: dotnet test tests/Integration --no-build -c Release --logger "trx;LogFileName=integration-tests.trx"
+        env:
+          ConnectionStrings__Default: "Server=localhost;Port=3306;Database=turnify_test;Uid=turnify;Pwd=turnify_test_pass;CharSet=utf8mb4;"
+          ConnectionStrings__Redis: "localhost:6379"
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: '**/*.trx'
+          reporter: dotnet-trx

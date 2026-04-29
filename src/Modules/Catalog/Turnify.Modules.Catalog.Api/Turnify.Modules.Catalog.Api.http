@@ -1,0 +1,6 @@
+@Turnify.Modules.Catalog.Api_HostAddress = http://localhost:5110
+
+GET {{Turnify.Modules.Catalog.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

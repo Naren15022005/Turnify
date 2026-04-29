@@ -1,0 +1,6 @@
+@Turnify.Modules.Payments.Api_HostAddress = http://localhost:5120
+
+GET {{Turnify.Modules.Payments.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
